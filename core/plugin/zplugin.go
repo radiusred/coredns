@@ -9,13 +9,11 @@ import (
 	_ "github.com/coredns/coredns/plugin/any"
 	_ "github.com/coredns/coredns/plugin/auto"
 	_ "github.com/coredns/coredns/plugin/autopath"
-	_ "github.com/coredns/coredns/plugin/azure"
 	_ "github.com/coredns/coredns/plugin/bind"
 	_ "github.com/coredns/coredns/plugin/bufsize"
 	_ "github.com/coredns/coredns/plugin/cache"
 	_ "github.com/coredns/coredns/plugin/cancel"
 	_ "github.com/coredns/coredns/plugin/chaos"
-	_ "github.com/coredns/coredns/plugin/clouddns"
 	_ "github.com/coredns/coredns/plugin/debug"
 	_ "github.com/coredns/coredns/plugin/dns64"
 	_ "github.com/coredns/coredns/plugin/dnssec"
@@ -51,7 +49,6 @@ import (
 	_ "github.com/coredns/coredns/plugin/reload"
 	_ "github.com/coredns/coredns/plugin/rewrite"
 	_ "github.com/coredns/coredns/plugin/root"
-	_ "github.com/coredns/coredns/plugin/route53"
 	_ "github.com/coredns/coredns/plugin/secondary"
 	_ "github.com/coredns/coredns/plugin/sign"
 	_ "github.com/coredns/coredns/plugin/template"
@@ -62,4 +59,6 @@ import (
 	_ "github.com/coredns/coredns/plugin/tsig"
 	_ "github.com/coredns/coredns/plugin/view"
 	_ "github.com/coredns/coredns/plugin/whoami"
+
+	_ "github.com/giantswarm/coredns-warnlist-plugin"
 )
