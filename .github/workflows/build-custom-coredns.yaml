@@ -22,7 +22,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       
-      - name: Build custom CoreDNS
+      - name: Build custom CoreDNS for multiple architectures
         run: |
           echo "Fetching external plugin..."
           go get github.com/giantswarm/coredns-warnlist-plugin
@@ -30,15 +30,26 @@ jobs:
           echo "Generating code..."
           go generate
           
-          echo "Building static binary for maximum compatibility..."
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -a -ldflags '-extldflags "-static"' -o coredns-custom
+          echo "Building static binaries for multiple architectures..."
           
-          echo "Verifying binary..."
-          ./coredns-custom -version
+          # Build for amd64
+          echo "Building for linux/amd64..."
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -a -ldflags '-extldflags "-static"' -o coredns-custom-amd64
           
-          echo "Checking binary type..."
-          file coredns-custom
-          ldd coredns-custom || echo "Binary is statically linked (this is good!)"
+          # Build for arm64
+          echo "Building for linux/arm64..."
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -v -a -ldflags '-extldflags "-static"' -o coredns-custom-arm64
+          
+          echo "Verifying binaries..."
+          file coredns-custom-amd64
+          file coredns-custom-arm64
+          
+          # Test amd64 binary (we're running on amd64)
+          ./coredns-custom-amd64 -version
+          
+          echo "Checking binary types..."
+          ldd coredns-custom-amd64 2>&1 || echo "amd64 binary is statically linked ✓"
+          ldd coredns-custom-arm64 2>&1 || echo "arm64 binary is statically linked ✓"
       
       - name: Create test Corefile
         run: |
@@ -62,7 +73,7 @@ jobs:
       
       - name: Run CoreDNS in background
         run: |
-          ./coredns-custom -conf Corefile.test &
+          ./coredns-custom-amd64 -conf Corefile.test &
           COREDNS_PID=$!
           echo "COREDNS_PID=$COREDNS_PID" >> $GITHUB_ENV
           
@@ -103,7 +114,7 @@ jobs:
       - name: Verify warnlist plugin loaded
         run: |
           echo "Checking if warnlist plugin is loaded..."
-          ./coredns-custom -plugins | grep warnlist
+          ./coredns-custom-amd64 -plugins | grep warnlist
           echo "✓ Warnlist plugin is loaded"
       
       - name: Check prometheus metrics endpoint
@@ -160,7 +171,7 @@ jobs:
       - name: Get CoreDNS version
         id: version
         run: |
-          VERSION=$(./coredns-custom -version 2>&1 | head -n1 || echo "unknown")
+          VERSION=$(./coredns-custom-amd64 -version 2>&1 | head -n1 || echo "unknown")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "CoreDNS version: $VERSION"
       
@@ -188,7 +199,8 @@ jobs:
             - ✓ Prometheus metrics endpoint responding
             - ✓ Warnlist domains logged and monitored
           files: |
-            coredns-custom
+            coredns-custom-amd64
+            coredns-custom-arm64
           draft: false
           prerelease: false
         env:
